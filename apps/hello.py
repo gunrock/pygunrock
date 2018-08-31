@@ -67,7 +67,7 @@ class IterationLoop(BaseIterationLoop):
 
 class Enactor(BaseEnactor):
     def Reset(self, src):
-        self.frontier.append(src)
+        self.frontier = [src]
     
     def Enact(self):
         iteration_loop = IterationLoop(self)

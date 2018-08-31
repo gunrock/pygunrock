@@ -30,8 +30,12 @@ class BaseEnactor:
 
 
 class BaseIterationLoop():
+    # !! TODO: Where does Gather get called?
+    # !! TODO: Where does Stop_Condition get called?
+    def __init__(self, enactor):
+        self.enactor = enactor
+    
     def run(self):
-        
         enactor_stats = self.enactor.stats
         problem       = self.enactor.problem
         graph         = problem.graph

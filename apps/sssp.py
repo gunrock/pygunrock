@@ -53,9 +53,6 @@ class Problem:
 # Iteration loop
 
 class IterationLoop(BaseIterationLoop):
-    def __init__(self, enactor):
-        self.enactor = enactor
-    
     def _advance_op(self, src, dest, problem, enactor_stats):
         src_distance = problem.distances[src]
         edge_weight  = 1
@@ -78,7 +75,7 @@ class IterationLoop(BaseIterationLoop):
 
 class Enactor(BaseEnactor):
     def Reset(self, src):
-        self.frontier.append(src)
+        self.frontier = [src]
     
     def Enact(self):
         iteration_loop = IterationLoop(self)
