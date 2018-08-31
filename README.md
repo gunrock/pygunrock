@@ -1,4 +1,6 @@
+### pygunrock
 
+(Very) simple python implementation of [gunrock](https://github.com/gunrock/gunrock/)
 
 #### Quickstart
 
