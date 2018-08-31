@@ -1,6 +1,6 @@
 ### pygunrock
 
-(Very) simple python implementation of [gunrock](https://github.com/gunrock/gunrock/)
+(Very) simple python clone of [gunrock](https://github.com/gunrock/gunrock/)
 
 #### Quickstart
 
