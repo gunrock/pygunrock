@@ -9,11 +9,16 @@ import argparse
 import networkx as nx
 from pygunrock import BaseEnactor, BaseIterationLoop
 
+import numpy as np
+
 # --
 # Helpers
 
 def cpu_reference(graph, parameters):
-    return list(dict(graph.degree).items())
+    sssp = nx.single_source_shortest_path_length(graph, parameters.src)
+    sssp = dict(sssp).items()
+    sssp = sorted(sssp, key=lambda x: x[0])
+    return sssp
 
 def validate_results(result1, result2):
     try:
@@ -32,15 +37,17 @@ class Problem:
     def Init(self, graph):
         self.graph = graph
         
-        self.degrees = [0] * graph.number_of_nodes()
-        self.visited = [0] * graph.number_of_nodes()
+        self.distances = [None] * graph.number_of_nodes()
+        self.labels    = [None] * graph.number_of_nodes()
     
-    def Reset(self):
-        self.degrees = [0] * graph.number_of_nodes()
-        self.visited = [0] * graph.number_of_nodes()
+    def Reset(self, src):
+        self.distances = [np.inf] * graph.number_of_nodes()
+        self.labels    = [None] * graph.number_of_nodes()
+        
+        self.distances[src] = 0
     
     def Extract(self):
-        return list(zip(range(len(self.degrees)), self.degrees))
+        return list(zip(range(len(self.distances)), self.distances))
 
 # --
 # Iteration loop
@@ -50,16 +57,20 @@ class IterationLoop(BaseIterationLoop):
         self.enactor = enactor
     
     def _advance_op(self, src, dest, problem, enactor_stats):
-        problem.visited[src] = 1
+        src_distance = problem.distances[src]
+        edge_weight  = 1
+        new_distance = src_distance + edge_weight
         
-        dest_visited  = problem.visited[dest]
-        problem.visited[dest] = 1
+        old_distance = problem.distances[dest]
+        problem.distances[dest] = min(problem.distances[dest], new_distance)
         
-        problem.degrees[src] += 1
-        
-        return dest_visited == 0
+        return new_distance < old_distance
         
     def _filter_op(self, src, dest, problem, enactor_stats):
+        if problem.labels[dest] == enactor_stats['iteration']:
+            return False
+        
+        problem.labels[dest] = enactor_stats['iteration']
         return True
 
 # --
@@ -96,7 +107,7 @@ if __name__ == '__main__':
     enactor = Enactor()
     enactor.Init(problem)
     
-    problem.Reset()
+    problem.Reset(src)
     enactor.Reset(src)
     
     enactor.Enact()

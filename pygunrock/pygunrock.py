@@ -7,12 +7,13 @@
 class BaseEnactor:
     def __init__(self):
         self.frontier = []
+        self.stats = {'iteration' : 0}
     
     def Init(self, problem):
         self.problem = problem
     
     def Enact(self, graph):
-        while len(self.frontier):
+        while len(frontier):
             new_frontier = self.__iteration(
                 graph=graph,
                 frontier=self.frontier,
@@ -21,19 +22,32 @@ class BaseEnactor:
                 filter_op=self._filter_op,
             )
             
-            self.frontier = new_frontier
-    
-    def __iteration(self, graph, frontier, problem, advance_op, filter_op):
-        new_frontier = []
+            frontier = new_frontier
+            
+            self.stats['iteration'] += 1
         
-        # Apply advance op
-        for src in frontier:
-            for dest in graph.neighbors(src):
-                add_to_new_frontier = advance_op(src, dest, problem)
-                if add_to_new_frontier:
-                    new_frontier.append(dest)
+        return frontier
+
+
+class BaseIterationLoop():
+    def run(self):
         
-        # Apply filter op
-        new_frontier = list(filter(lambda dest: filter_op(-1, dest, problem), new_frontier))
+        enactor_stats = self.enactor.stats
+        problem       = self.enactor.problem
+        graph         = problem.graph
         
-        return new_frontier
+        while len(self.enactor.frontier):
+            new_frontier = []
+            
+            # Apply advance op
+            for src in self.enactor.frontier:
+                for dest in graph.neighbors(src):
+                    add_to_new_frontier = self._advance_op(src, dest, problem, enactor_stats)
+                    if add_to_new_frontier:
+                        new_frontier.append(dest)
+            
+            # Apply filter op
+            new_frontier = list(filter(lambda dest: self._filter_op(-1, dest, problem, enactor_stats), new_frontier))
+            
+            # Repeat
+            self.enactor.frontier = new_frontier
