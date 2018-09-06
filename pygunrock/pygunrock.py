@@ -31,16 +31,18 @@ class BaseEnactor:
 
 class BaseIterationLoop():
     # !! TODO: Where does Gather get called?
-    # !! TODO: Where does Stop_Condition get called?
     def __init__(self, enactor):
         self.enactor = enactor
+    
+    def Stop_Condition(self):
+        return len(self.enactor.frontier) > 0
     
     def run(self):
         enactor_stats = self.enactor.stats
         problem       = self.enactor.problem
         graph         = problem.graph
         
-        while len(self.enactor.frontier):
+        while self.Stop_Condition():
             new_frontier = []
             
             # Apply advance op
